@@ -41,8 +41,6 @@ class Trainer(object):
                     inputs = dict()
                     inputs = {k: v.to(self.args.device) for k, v in self._create_model_arguments(batch).items() \
                         if k not in ["episode_id", "turn_id"]}                            
-                    inputs.pop("episode_id")
-                    inputs.pop("turn_id")
                     
                     if self.args.fp16:
                         with autocast():
