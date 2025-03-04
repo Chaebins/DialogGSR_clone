@@ -111,9 +111,6 @@ class T5Dataset(Dataset):
         line = linecache.getline(self.file_name, index + 1)
         json_dict = json.loads(line)
         
-        episode_id = json_dict['episode_id']
-        turn_id = json_dict['turn_id']
-        
         bos_id = torch.tensor([self.tokenizer.pad_token_id], dtype=torch.long)
         eos_id = torch.tensor([self.tokenizer.eos_token_id], dtype=torch.long)
 
@@ -154,7 +151,7 @@ class T5Dataset(Dataset):
             max_length=self.max_decode_step).squeeze(0)
         response_ids = torch.cat([bos_id, response_ids], dim=0)
 
-        return_data = (dialog_history_ids, response_ids, episode_id, turn_id)
+        return_data = (dialog_history_ids, response_ids)
         return return_data
 
     def with_train(self, index):
