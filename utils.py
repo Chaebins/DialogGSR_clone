@@ -16,7 +16,7 @@ def is_whitespace(c):
         return True
     return False
 
-def construct_paths(remaining_triplets, curr_path_nlp_list=[], num_hops=2):
+def construct_paths(remaining_triplets, entities, curr_path_nlp_list=[], num_hops=2):
     if len(remaining_triplets) == 0:
         if len(curr_path_nlp_list) == 0:
             return ""
@@ -26,11 +26,14 @@ def construct_paths(remaining_triplets, curr_path_nlp_list=[], num_hops=2):
 
     if len(curr_path_nlp_list) == 0:
         # Start new path
-        return construct_paths(remaining_triplets[1:], ["[HEAD]"+remaining_triplets[0][0]+"[Int1_1][Int1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int2_1][Int2_2]"+remaining_triplets[0][2]], num_hops)
+        if remaining_triplets[0][0] not in entities:
+            return construct_paths(remaining_triplets[1:], entities, ["[HEAD]"+remaining_triplets[0][2]+"[Rev1_1][Rev1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Rev2_1][Rev2_2]"+remaining_triplets[0][0]], num_hops)
+        else:
+            return construct_paths(remaining_triplets[1:], entities, ["[HEAD]"+remaining_triplets[0][0]+"[Int1_1][Int1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int2_1][Int2_2]"+remaining_triplets[0][2]], num_hops)
     
     last_segment = curr_path_nlp_list[-1]
     if "[Int" + str(num_hops*2) + "_1]" in last_segment or "[Rev" + str(num_hops*2) + "_1]" in last_segment:
-        return construct_paths(remaining_triplets[1:], curr_path_nlp_list + ["[HEAD]"+remaining_triplets[0][0]+"[Int1_1][Int1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int2_1][Int2_2]"+remaining_triplets[0][2]], num_hops)
+        return construct_paths(remaining_triplets[1:], entities, curr_path_nlp_list + ["[HEAD]"+remaining_triplets[0][0]+"[Int1_1][Int1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int2_1][Int2_2]"+remaining_triplets[0][2]], num_hops)
     else:
         for nh in range(num_hops, 0, -1):
             if "[Int"+str(nh*2)+"_2]" in last_segment:
@@ -43,17 +46,20 @@ def construct_paths(remaining_triplets, curr_path_nlp_list=[], num_hops=2):
         if remaining_triplets[0][0] == curr_entity:
             curr_hop = nh
             if curr_hop == num_hops:
-                return construct_paths(remaining_triplets[1:], curr_path_nlp_list + ["[Int"+str(curr_hop*2+1)+"_1][Int"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int"+str(curr_hop*2+2)+"_1][Int"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][2]+"[TAIL]"], num_hops)
+                return construct_paths(remaining_triplets[1:], entities, curr_path_nlp_list + ["[Int"+str(curr_hop*2+1)+"_1][Int"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int"+str(curr_hop*2+2)+"_1][Int"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][2]+"[TAIL]"], num_hops)
             else:
-                return construct_paths(remaining_triplets[1:], curr_path_nlp_list + ["[Int"+str(curr_hop*2+1)+"_1][Int"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int"+str(curr_hop*2+2)+"_1][Int"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][2]], num_hops)
+                return construct_paths(remaining_triplets[1:], entities, curr_path_nlp_list + ["[Int"+str(curr_hop*2+1)+"_1][Int"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int"+str(curr_hop*2+2)+"_1][Int"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][2]], num_hops)
         elif remaining_triplets[0][2] == curr_entity:
             curr_hop = nh
             if curr_hop == num_hops:
-                return construct_paths(remaining_triplets[1:], curr_path_nlp_list + ["[Rev"+str(curr_hop*2+1)+"_1][Rev"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Rev"+str(curr_hop*2+2)+"_1][Rev"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][0]+"[TAIL]"], num_hops)
+                return construct_paths(remaining_triplets[1:], entities, curr_path_nlp_list + ["[Rev"+str(curr_hop*2+1)+"_1][Rev"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Rev"+str(curr_hop*2+2)+"_1][Rev"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][0]+"[TAIL]"], num_hops)
             else:
-                return construct_paths(remaining_triplets[1:], curr_path_nlp_list + ["[Rev"+str(curr_hop*2+1)+"_1][Rev"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Rev"+str(curr_hop*2+2)+"_1][Rev"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][0]], num_hops)
+                return construct_paths(remaining_triplets[1:], entities, curr_path_nlp_list + ["[Rev"+str(curr_hop*2+1)+"_1][Rev"+str(curr_hop*2+1)+"_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Rev"+str(curr_hop*2+2)+"_1][Rev"+str(curr_hop*2+2)+"_2]"+remaining_triplets[0][0]], num_hops)
         else:
-            return construct_paths(remaining_triplets[1:], curr_path_nlp_list + ["[TAIL]"]+["[HEAD]"+remaining_triplets[0][0]+"[Int1_1][Int1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int2_1][Int2_2]"+remaining_triplets[0][2]], num_hops)
+            if remaining_triplets[0][0] not in entities:
+                return construct_paths(remaining_triplets[1:], entities, curr_path_nlp_list + ["[TAIL]"]+["[HEAD]"+remaining_triplets[0][2]+"[Rev1_1][Rev1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Rev2_1][Rev2_2]"+remaining_triplets[0][0]], num_hops)
+            else:
+                return construct_paths(remaining_triplets[1:], entities, curr_path_nlp_list + ["[TAIL]"]+["[HEAD]"+remaining_triplets[0][0]+"[Int1_1][Int1_2]"+remaining_triplets[0][1].replace("_", " ").replace("-", " ")+"[Int2_1][Int2_2]"+remaining_triplets[0][2]], num_hops)
 
 class T5Dataset(Dataset):
     def __init__(self, jsonl_file, args):
@@ -117,7 +123,7 @@ class T5Dataset(Dataset):
         for idx, rel_triplets in enumerate(reversed(rel_paths)):
             if idx < 2:
                 continue
-            curr_rel_paths = construct_paths(rel_triplets)
+            curr_rel_paths = construct_paths(rel_triplets, json_dict['entities'])
             
             if len(self.tokenizer.encode(rel_knowledge+curr_rel_paths)) > self.args.knowledge_length:
                 break
@@ -168,7 +174,7 @@ class T5Dataset(Dataset):
         for idx, rel_triplets in enumerate(reversed(rel_paths)):
             if idx < 2:
                 continue
-            curr_rel_paths = construct_paths(rel_triplets)
+            curr_rel_paths = construct_paths(rel_triplets, json_dict['entities'])
             
             if len(self.tokenizer.encode(tot_knowledge+curr_rel_paths)) > self.args.knowledge_length:
                 break

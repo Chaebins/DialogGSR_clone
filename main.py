@@ -50,7 +50,7 @@ class DataModule:
             features = self.processor.get_test_examples(self.args.data_dir)
             
         dataloader = self._create_dataloader(features, fold)
-        return dataloader, features, self.processor
+        return dataloader
 
     def _create_dataloader(self, features, fold):
         """Create appropriate dataloader based on fold"""
@@ -207,9 +207,9 @@ class Evaluator:
                                         )
                     dataset_ptr += 1
                 # break
-            pred_fw.close()
-            ref_fw.close()
-            profile_fw.close()
+        pred_fw.close()
+        ref_fw.close()
+        profile_fw.close()
                 
         return self._compute_metrics(test_hyp, test_ref)
 
@@ -290,14 +290,14 @@ def run(args):
     evaluator = Evaluator(args, tokenizer)
     
     # Load data
-    train_dataloader, _, _ = data_module.load_examples("train")
+    train_dataloader = data_module.load_examples("train")
     num_train_steps_per_epoch = len(train_dataloader)
     num_train_steps = int(num_train_steps_per_epoch * args.num_train_epochs)
     
     def step_callback(model, global_step):
         if global_step % (num_train_steps_per_epoch * args.eval_frequency) == 0 and args.local_rank in [0, -1] and model_manager.flag:
             epoch = int(global_step / num_train_steps_per_epoch - 1)
-            dev_dataloader, _, _ = data_module.load_examples("dev")
+            dev_dataloader = data_module.load_examples("dev")
             dev_results = evaluator.evaluate(model, dev_dataloader, "dev", global_step)
             
             tqdm.write("dev: " + str(dev_results))
@@ -325,7 +325,7 @@ def run(args):
     model.load_state_dict(torch.load(os.path.join(args.output_dir, WEIGHTS_NAME), map_location="cpu"))
     model.to(args.device)
     
-    test_dataloader, _, _ = data_module.load_examples("test")
+    test_dataloader = data_module.load_examples("test")
     results = evaluator.evaluate(model, test_dataloader, "test")
         
     with open(os.path.join(args.output_dir, "results.json"), "w") as f:

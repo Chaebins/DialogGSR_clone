@@ -17,7 +17,6 @@ class Trainer(object):
         self.model = model
         self.dataloader = dataloader
         self.num_train_steps = num_train_steps
-        self.writer = writer
         self.step_callback = step_callback
 
         self.optimizer = self._create_optimizer(model)
@@ -41,7 +40,9 @@ class Trainer(object):
                     model.train()
                     inputs = dict()
                     inputs = {k: v.to(self.args.device) for k, v in self._create_model_arguments(batch).items() \
-                        if k not in ["history_entities", "raw_user_input", "triplets_ids", "triplets_label"]}                            
+                        if k not in ["episode_id", "turn_id"]}                            
+                    inputs.pop("episode_id")
+                    inputs.pop("turn_id")
                     
                     if self.args.fp16:
                         with autocast():
