@@ -1,7 +1,7 @@
 import pickle
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--data_dir", type=str, default='/data')
+parser.add_argument("--data_dir", type=str, default='../data')
 args = parser.parse_args()
 
 dataset = []
