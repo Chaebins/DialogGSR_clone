@@ -12,6 +12,8 @@
 Official PyTorch implementation of the "DialogGSR: Generative Subgraph Retrieval for Knowledge Graph-Grounded Dialog Generation".
 (EMNLP 2024)
 
+![main figure](assets/main_figure.png)
+
 
 ## Enviroment
 To install requirements, run:
