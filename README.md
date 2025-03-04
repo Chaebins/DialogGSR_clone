@@ -29,6 +29,20 @@ sh setting.sh
 ### OpenDialKG
 We utilized OpenDialKG dataset from the [link](https://github.com/facebookresearch/opendialkg) repository. Place the downloaded dataset in the `data/` folder.
 
+### Preprocessing
+After downloading the dataset, run the following preprocessing scripts in order:
+
+```bash
+# Run preprocessing scripts
+cd preprocess
+python build_codebook.py
+python preprocess_data.py
+python preprocess_path.py
+python preprocess_unsup.py
+```
+
+This will generate the processed data files needed for training.
+
 ---
 
 ## Training
