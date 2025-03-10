@@ -9,9 +9,8 @@ import numpy as np
 import pickle
 import torch
 from torch.utils.data import DataLoader, RandomSampler
-from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
-from transformers import WEIGHTS_NAME, AutoTokenizer, LogitsProcessorList
+from transformers import WEIGHTS_NAME, AutoTokenizer
 
 from torch.nn.utils.rnn import pad_sequence
 from trainer import Trainer
@@ -21,7 +20,7 @@ from utils import (
     load_raw_dataset,
     Profiler
 )
-from metrics import sequence_loss, bleu_metric, f1_metric, distinct_metric
+from metrics import sequence_loss, bleu_metric, f1_metric
 from rouge import Rouge
 from models.modeling import (
     T5ForKnowledgeAugmentedGeneration

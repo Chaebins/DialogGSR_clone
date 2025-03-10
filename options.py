@@ -18,10 +18,13 @@ def setup_args():
                         help="Number of epochs to train")
     parser.add_argument("--hidden_size", type=int, default=512)
     parser.add_argument("--entity_embed_size", type=int, default=512)
+    parser.add_argument("--masking_ratio", type=float, default=0.3)
+    parser.add_argument("--lm_weight", type=float, default=0.8)
+    
 
     # Training configuration
-    parser.add_argument("--learning_rate", type=float, default=1e-4)
-    parser.add_argument("--weight_decay", type=float, default=0.01)
+    parser.add_argument("--learning_rate", type=float, default=1e-3)
+    parser.add_argument("--weight_decay", type=float, default=0.1)
     parser.add_argument("--adam_epsilon", type=float, default=1e-8)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
     parser.add_argument("--fp16", action="store_true")
@@ -37,10 +40,6 @@ def setup_args():
     
     args = parser.parse_args()
 
-    # Set up output directory
-    basedir = os.path.join(os.getcwd(), "save")  # Using relative path instead of hardcoded
-    today = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    args.output_dir = os.path.join(basedir, today)
 
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
@@ -50,6 +49,5 @@ def setup_args():
     print(f"Data directory: {args.data_dir}")
     print(f"Knowledge length: {args.knowledge_length}")
     print(f"Hidden size: {args.hidden_size}")
-    print(f"Seed: {args.seed}")
 
     return args 

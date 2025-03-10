@@ -34,13 +34,13 @@ class Trainer(object):
         tr_loss = 0.0
 
         model.train()
-        with tqdm(total=self.num_train_steps, disable=self.args.local_rank not in (-1, 0)) as pbar:
+        with tqdm(total=self.num_train_steps) as pbar:
             while True:
                 for step, batch in enumerate(dataloader):
                     model.train()
                     inputs = dict()
                     inputs = {k: v.to(self.args.device) for k, v in self._create_model_arguments(batch).items() \
-                        if k not in ["episode_id", "turn_id"]}                            
+                        if k not in ["episode_id", "turn_id", "entities"]}                            
                     
                     if self.args.fp16:
                         with autocast():
@@ -73,16 +73,6 @@ class Trainer(object):
                         else:
                             self.optimizer.step()
 
-                        if self.args.use_contrastive:
-                            if hasattr(model, "module"):
-                                model.module.batch_scale.data = \
-                                    torch.clamp(model.module.batch_scale.data, 0, 4.6052)
-                                model.module.self_scale.data = \
-                                    torch.clamp(model.module.self_scale.data, 0, 4.6052)
-                            else:
-                                model.batch_scale.data = torch.clamp(model.batch_scale.data, 0, 4.6052)
-                                model.self_scale.data = torch.clamp(model.self_scale.data, 0, 4.6052)
-
                         model.zero_grad()
                         if self.args.fp16:
                             scaler.update()
@@ -96,8 +86,7 @@ class Trainer(object):
                             self.step_callback(model, global_step)
 
                         if (
-                            self.args.local_rank in (-1, 0)
-                            and self.args.output_dir
+                            self.args.output_dir is not None
                             and self.args.save_steps > 0
                             and global_step % self.args.save_steps == 0
                         ):

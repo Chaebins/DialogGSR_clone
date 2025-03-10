@@ -122,12 +122,47 @@ class KnowledgeGenerator(nn.Module):
             loss_fct = CrossEntropyLoss(ignore_index=-100)
             loss = loss_fct(lm_logits.view(-1, lm_logits.size(-1)), labels.view(-1))
 
-            return (({'total_loss': loss,
-                    'gold_loss': torch.tensor(0.0),
-                    'contarstive_loss': torch.tensor(0.0),
-                    'retreival_loss': torch.tensor(0.0)},)+ outputs)
+            return (({'total_loss': loss},)+ outputs)
         else:
             return outputs
+        
+        
+class KnowledgePretrainer(nn.Module):
+    def __init__(self, args):
+        super().__init__()
+        self.args = args
+        self.knowledge_pretrainer = CustomT5ForConditionalGeneration.from_pretrained("t5-small", args=args)
+
+        for name, param in self.knowledge_pretrainer.named_parameters():
+            if "new_embed" in name:
+                param.requires_grad=True
+            else:
+                param.requires_grad=False
+        
+    def forward(
+        self,
+        input_ids=None,
+        attention_mask=None,
+        gold_attention_mask=None,
+        decoder_input_ids=None,
+        decoder_attention_mask=None,
+        head_mask=None,
+        decoder_head_mask=None,
+        cross_attn_head_mask=None,
+        encoder_outputs=None,
+        past_key_values=None,
+        inputs_embeds=None,
+        decoder_inputs_embeds=None,
+        labels=None,
+        use_cache=None,
+        output_attentions=None,
+        output_hidden_states=None,
+        return_dict=None, # Belows are the additional inputs
+    ):
+        outputs = self.knowledge_pretrainer(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+        loss = outputs.loss        
+
+        return ({'total_loss': loss},)
     
 
 class CustomT5ForConditionalGeneration(T5ForConditionalGeneration):
@@ -148,65 +183,6 @@ class CustomT5ForConditionalGeneration(T5ForConditionalGeneration):
         decoder_config.is_encoder_decoder = False
         decoder_config.num_layers = config.num_decoder_layers
         self.decoder = CustomT5Stack(decoder_config, self.shared, args, self.new_embed)
-    
-        
-
-class CustomT5EncoderModel(T5EncoderModel):
-    def __init__(self, config, args):
-        super().__init__(config)
-        encoder_config = copy.deepcopy(config)
-        encoder_config.use_cache = False
-        encoder_config.is_encoder_decoder = False
-        self.encoder = CustomT5Stack(encoder_config, self.shared, args)
-
-    def forward(
-        self,
-        input_ids=None,
-        attention_mask=None,
-        head_mask=None,
-        input_embeds=None,
-        output_attentions=None,
-        output_hidden_states=None,
-        return_dict=None,
-    ):
-        return super().forward(
-            input_ids,
-            attention_mask,
-            head_mask,
-            input_embeds,
-            output_attentions,
-            output_hidden_states,
-            return_dict
-        )
-
-    
-    def prepare_inputs_for_generation(
-        self, 
-        input_ids, 
-        past=None, 
-        attention_mask=None, 
-        head_mask=None,
-        decoder_head_mask=None,
-        cross_attn_head_mask=None,
-        use_cache=None, 
-        encoder_outputs=None, 
-        **kwargs,
-    ):
-        # cut decoder_input_ids if past is used
-        if past is not None:
-            input_ids = input_ids[:, -1:]
-
-        return_dict = {
-            "decoder_input_ids": input_ids,
-            "past_key_values": past,
-            "encoder_outputs": encoder_outputs,
-            "attention_mask": attention_mask,
-            "head_mask":head_mask,
-            "decoder_head_mask":decoder_head_mask,
-            "use_cache": use_cache,
-        }
-        # return_dict.update(adapter_inputs)
-        return return_dict
 
 
 class CustomT5Stack(T5Stack):

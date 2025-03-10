@@ -68,12 +68,12 @@ class T5Dataset(Dataset):
         self.max_length = args.max_length
         self.max_decode_step = args.max_decode_step
         self.tokenizer = args.tokenizer
-        self.hist_turn = args.hist_turn
+        self.hist_turn = 100
         self.file_name = jsonl_file
         self.total_size = int(subprocess.check_output(
             "wc -l " + jsonl_file, shell=True).split()[0])
 
-        special_tokens = ['[HEAD]', '[TAIL]']
+        special_tokens = ['[HEAD]']
         for i in range(1, 3):
             special_tokens.extend([
                 f'[Int{i*2-1}_1]', f'[Int{i*2-1}_2]',
@@ -81,21 +81,16 @@ class T5Dataset(Dataset):
                 f'[Int{i*2}_1]', f'[Int{i*2}_2]',
                 f'[Rev{i*2}_1]', f'[Rev{i*2}_2]'
             ])
+        special_tokens.append('[TAIL]')
         self.tokenizer.add_special_tokens({'additional_special_tokens': special_tokens})
         self.path_lim = self.args.num_paths
         self.stage = stage
             
-        if args.lm_type == 't5':
-            self.apprentice_prefix = "apprentice: "
-            self.wizard_prefix = "wizard: "
-            self.knowledge_prefix = "knowledge: "
-            self.prefix = "dialogue: "
-            self.topic_prefix = "topic: "
-        else:
-            self.apprentice_prefix = ""
-            self.wizard_prefix = ""
-            self.knowledge_prefix = ""
-            self.prefix = ""
+        self.apprentice_prefix = "apprentice: "
+        self.wizard_prefix = "wizard: "
+        self.knowledge_prefix = "knowledge: "
+        self.prefix = "dialogue: "
+        self.topic_prefix = "topic: "
 
         with open(os.path.join(args.data_dir, "entity_codebook.pkl"), 'rb') as f:
             self.entity_codebook = pickle.load(f)
@@ -192,6 +187,7 @@ class T5Dataset(Dataset):
         
         episode_id = json_dict["episode_id"]
         turn_id = json_dict["turn_id"]
+        entities = json_dict["entities"]
         
         bos_id = torch.tensor([self.tokenizer.pad_token_id], dtype=torch.long)
         eos_id = torch.tensor([self.tokenizer.eos_token_id], dtype=torch.long)
@@ -219,7 +215,7 @@ class T5Dataset(Dataset):
             truncation=True,
             max_length=self.max_length).squeeze(0)
         
-        return_data = (dialog_history_ids, output_ids, episode_id, turn_id)
+        return_data = (dialog_history_ids, output_ids, episode_id, turn_id, entities)
         return return_data
 
 
@@ -324,7 +320,9 @@ class T5Dataset(Dataset):
         return return_data
 
     def __getitem__(self, index):
-        if self.stage == "unsupervised":
+        if self.stage == "retrieval":
+            return self.knowledge_retrieval(index)
+        elif self.stage == "unsupervised":
             return self.unsupervised(index)
         elif self.stage == "response":
             if self.is_train:
