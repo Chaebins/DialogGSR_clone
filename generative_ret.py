@@ -11,14 +11,14 @@ from tqdm import tqdm
 
 from trainer import Trainer
 from options import setup_args
-from utils import Dialprocessor
+from utils.utils import Dialprocessor
 from transformers import WEIGHTS_NAME, AutoTokenizer
 
 from models.modeling import GraphConstraintLogitsProcessor, KnowledgeGenerator
 from transformers import LogitsProcessorList
 
 import re
-from trie import Trie
+from utils.trie import Trie
 
 
 logger = logging.getLogger(__name__)
@@ -231,6 +231,7 @@ class KnowledgeGen:
             for sp in seq_paths:
                 path_list.append(sp)
             path_list = [list(set(p)) for p in path_list]
+            import pdb; pdb.set_trace()
 
         return
 
@@ -248,11 +249,11 @@ class ModelManager:
         
         
         model = KnowledgeGenerator(self.args)
-        unsup_checkpoint = torch.load(os.path.join(self.args.output_dir, "unsup/training_args.bin"), map_location="cpu")
-
-        model.knowledge_generator.new_embed.weight.data = unsup_checkpoint['encoder.new_embed.weight']
-        model.knowledge_generator.encoder.new_embed.weight.data = unsup_checkpoint['encoder.new_embed.weight']
-        model.knowledge_generator.decoder.new_embed.weight.data = unsup_checkpoint['encoder.new_embed.weight']
+        # unsup_checkpoint = torch.load(os.path.join(self.args.output_dir, "unsup/training_args.bin"), map_location="cpu")
+# 
+        # model.knowledge_generator.new_embed.weight.data = unsup_checkpoint['encoder.new_embed.weight']
+        # model.knowledge_generator.encoder.new_embed.weight.data = unsup_checkpoint['encoder.new_embed.weight']
+        # model.knowledge_generator.decoder.new_embed.weight.data = unsup_checkpoint['encoder.new_embed.weight']
         
         return model, tokenizer
 

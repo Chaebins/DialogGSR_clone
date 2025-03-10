@@ -15,12 +15,12 @@ from transformers import WEIGHTS_NAME, AutoTokenizer
 from torch.nn.utils.rnn import pad_sequence
 from trainer import Trainer
 from options import setup_args
-from utils import (
+from utils.utils import (
     Dialprocessor,
     load_raw_dataset,
     Profiler
 )
-from metrics import sequence_loss, bleu_metric, f1_metric
+from utils.metrics import sequence_loss, bleu_metric, f1_metric
 from rouge import Rouge
 from models.modeling import (
     T5ForKnowledgeAugmentedGeneration

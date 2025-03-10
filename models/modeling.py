@@ -18,7 +18,7 @@ from transformers import LogitsProcessor
 
 
 class T5ForKnowledgeAugmentedGeneration(nn.Module):
-    def __init__(self, args, entity_embeddings):
+    def __init__(self, args):
         super().__init__()
         self.response_generator = CustomT5ForConditionalGeneration.from_pretrained("t5-small", args=args)
         self.args = args

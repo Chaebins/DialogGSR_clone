@@ -7,7 +7,7 @@ from transformers import WEIGHTS_NAME, AutoTokenizer, BertConfig
 
 from trainer import Trainer
 from options import setup_args
-from utils import Dialprocessor
+from utils.utils import Dialprocessor
 
 # Configure logging
 logger = logging.getLogger(__name__)
