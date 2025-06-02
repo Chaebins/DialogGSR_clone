@@ -243,8 +243,8 @@ class ModelManager:
         """Initialize model and tokenizer"""
         tokenizer = AutoTokenizer.from_pretrained("t5-small")
         self.args.tokenizer = tokenizer
-        
-        model = T5ForKnowledgeAugmentedGeneration(self.args, entity_embeddings)
+
+        model = T5ForKnowledgeAugmentedGeneration(self.args)
         # self._load_pretrained_weights(model)
         
         return model, tokenizer
@@ -294,7 +294,7 @@ def run(args):
     num_train_steps = int(num_train_steps_per_epoch * args.num_train_epochs)
     
     def step_callback(model, global_step):
-        if global_step % (num_train_steps_per_epoch * args.eval_frequency) == 0 and args.local_rank in [0, -1] and model_manager.flag:
+        if global_step % (num_train_steps_per_epoch * args.eval_frequency) == 0 and getattr(args,"local_rank",-1) in [0, -1] and model_manager.flag:
             epoch = int(global_step / num_train_steps_per_epoch - 1)
             dev_dataloader = data_module.load_examples("dev")
             dev_results = evaluator.evaluate(model, dev_dataloader, "dev", global_step)

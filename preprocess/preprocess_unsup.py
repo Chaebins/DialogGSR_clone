@@ -14,7 +14,7 @@ class GraphPathFinder:
         self.max_paths = max_paths
         
     def process_fold(self, data_dir, fold):
-        with open(os.path.join(data_dir, f"{fold}_public.jsonl"), "r") as f:
+        with open(os.path.join(data_dir, f"{fold}.jsonl"), "r") as f:
             for line in tqdm(f):
                 data = json.loads(line)
                 self._add_triplets(data['triplets'], data['entities'])
@@ -38,7 +38,8 @@ class GraphPathFinder:
             if len(two_hop_paths) >= self.max_paths:
                 two_hop_paths = random.sample(two_hop_paths, self.max_paths)
             
-            all_paths.extend(one_hop_paths)
+            for path in one_hop_paths:
+                all_paths.append([path])
             all_paths.extend(two_hop_paths)
 
         return all_paths
@@ -93,7 +94,7 @@ class GraphPathFinder:
         rel1 = self.graph[node][neighbor]['relation']
         rel2 = self.graph[neighbor][two_hop_neighbor]['relation']
         
-        return (node, rel1, neighbor, rel2, two_hop_neighbor)
+        return [[node, rel1, neighbor], [neighbor, rel2, two_hop_neighbor]]
 
 
 def main():
@@ -111,7 +112,9 @@ def main():
     
     path_data = []
     for i in range(len(path_list)//64 + 1):
-        path_data.append({"triplets":path_list[i*64:(i+1)*64]})
+        chunk = path_list[i*64:(i+1)*64]
+        if chunk:
+            path_data.append({"ret_triplets": chunk})
     
     with open(os.path.join(data_dir, f"unsup_path.jsonl"), 'w') as f:
         for item in path_data:

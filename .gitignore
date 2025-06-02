@@ -1,2 +1,11 @@
-data
-save
+# Ignore data and large files
+data/
+output/
+__pycache__/
+*.pkl
+*.pt
+*.bin
+*.jsonl
+*.csv
+*.log
+*.ipynb_checkpoints/

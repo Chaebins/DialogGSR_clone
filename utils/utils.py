@@ -234,8 +234,8 @@ class T5Dataset(Dataset):
         rel_knowledge = self.knowledge_prefix
 
         for idx, rel_triplets in enumerate(reversed(rel_paths)):
-            # if idx < 2:
-                # continue
+            if idx < 2:
+                continue
             curr_rel_paths = construct_paths(rel_triplets, json_dict['entities'])
             
             if len(self.tokenizer.encode(rel_knowledge+curr_rel_paths)) > self.args.knowledge_length:
@@ -282,11 +282,11 @@ class T5Dataset(Dataset):
 
         tot_knowledge = self.knowledge_prefix
 
-        rel_paths = json_dict["ret_triplets"]
+        rel_paths = json_dict["gold_triplets"]
 
         for idx, rel_triplets in enumerate(reversed(rel_paths)):
-            # if idx < 2:
-                # continue
+            if idx < 2:
+                continue
             curr_rel_paths = construct_paths(rel_triplets, json_dict['entities'])
             
             if len(self.tokenizer.encode(tot_knowledge+curr_rel_paths)) > self.args.knowledge_length:
