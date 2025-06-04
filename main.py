@@ -238,6 +238,7 @@ class ModelManager:
     def __init__(self, args):
         self.args = args
         self.best_dev_score = 0.0
+        self.flag = True
         
     def initialize_model(self, entity_embeddings=None):
         """Initialize model and tokenizer"""
