@@ -230,7 +230,7 @@ class T5Dataset(Dataset):
         dialog_history = json_dict["history"]
         prefixed_dialog_history = self.prefix + '\n '.join(dialog_history[-self.hist_turn:])
 
-        rel_paths = json_dict["ret_triplets"]
+        rel_paths = json_dict["gold_triplets"]
         rel_knowledge = self.knowledge_prefix
 
         for idx, rel_triplets in enumerate(reversed(rel_paths)):
